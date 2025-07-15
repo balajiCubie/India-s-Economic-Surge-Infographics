@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>India's Economic Surge: Infographics</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        .bar-chart-bar {
+            transition: fill 0.3s ease-in-out;
+        }
+        .bar-chart-bar:hover {
+            fill: #4c51bf; /* Darker purple on hover */
+        }
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #6b7280;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4b5563;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+    <div class="container mx-auto bg-white rounded-lg shadow-xl p-6 sm:p-10">
+        <header class="text-center mb-10">
+            <h1 class="text-3xl sm:text-5xl font-extrabold text-indigo-800 mb-4 animate-fade-in">
+                India's Economic Surge
+            </h1>
+            <p class="text-lg sm:text-xl text-gray-600">
+                Top Activities Driving Its GDP Growth
+            </p>
+        </header>
+
+        <!-- Search and Filter Section -->
+        <div class="mb-8 flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+            <input type="text" id="searchInput" placeholder="Search activities..."
+                   class="p-3 border border-gray-300 rounded-lg w-full sm:w-1/2 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm">
+            <select id="sectorFilter"
+                    class="p-3 border border-gray-300 rounded-lg w-full sm:w-1/4 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm">
+                <option value="">All Sectors</option>
+                <!-- Options will be populated by JS -->
+            </select>
+        </div>
+
+        <!-- Infographic Chart Section -->
+        <section class="mb-12 p-6 bg-gray-50 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Top GDP Contributors (Percentage of GDP)</h2>
+            <div id="chartContainer" class="w-full h-96 overflow-x-auto">
+                <svg id="gdpChart" class="w-full h-full"></svg>
+            </div>
+            <p class="text-sm text-gray-500 mt-4 text-center">
+                Note: This chart displays activities with a direct percentage contribution to GDP.
+                Some activities contribute indirectly or have non-percentage based contributions.
+            </p>
+        </section>
+
+        <!-- Activities Grid -->
+        <section id="activitiesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Activity cards will be injected here by JavaScript -->
+        </section>
+
+        <!-- Message Box for alerts -->
+        <div id="messageBox" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 hidden">
+            <div class="bg-white p-6 rounded-lg shadow-xl text-center max-w-sm">
+                <p id="messageContent" class="text-lg font-semibold mb-4"></p>
+                <button id="messageCloseBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data for the infographics, extracted from the PDF
+        const activitiesData = [
+            { id: 1, name: "IT Services & Software", sector: "Services", contribution: "~9% of GDP", contributionValue: 9, growthDrivers: "Global outsourcing demand, digital adoption, skilled workforce, government initiatives (e.g., Digital India).", keyHubs: "Bengaluru, Hyderabad, Pune, Chennai, Gurgaon.", futureOutlook: "Continued expansion in cloud computing, AI, cybersecurity, fintech, and IoT, projected to reach ~10% of GDP by 2026." },
+            { id: 2, name: "Banking, Finance & Insurance (BFSI)", sector: "Services", contribution: "Part of financial, real estate, and professional services, which contribute ~22.1% of GDP.", contributionValue: 22.1, growthDrivers: "Financial inclusion schemes (Jan Dhan Yojana), digital banking (UPI), rising credit demand, policy reforms (NPCI, GST).", keyHubs: "Mumbai, Delhi-NCR, Bengaluru, Chennai.", futureOutlook: "Deeper penetration of banking/insurance, continued fintech innovation, and liberalization of capital flows." },
+            { id: 3, name: "E-commerce & Retail Trade", sector: "Services", contribution: "Part of trade/hotels/transport (~17% of GDP)", contributionValue: 17, growthDrivers: "Rising consumer spending from a growing middle class, smartphone/internet penetration, and logistics improvements.", keyHubs: "NCR (Noida/Delhi), Mumbai, Bengaluru, Hyderabad.", futureOutlook: "Continued shift to online shopping (30-40% annual growth), omni-channel retail, and rural e-tailing, underpinned by payment systems like UPI and expanding credit." },
+            { id: 4, name: "Automobiles (Vehicle Manufacturing)", sector: "Industry", contribution: "~7.1% of GDP", contributionValue: 7.1, growthDrivers: "Rising domestic vehicle demand, increasing middle-class income, and export markets (43% of India's auto output is exported). Major policies like PLI for EVs/auto components and state-level auto clusters fuel growth.", keyHubs: "Tamil Nadu (Chennai, Coimbatore), Maharashtra (Pune, Aurangabad), Haryana (Gurgaon), Gujarat, and Uttar Pradesh.", futureOutlook: "Electric vehicles (target 30% EV by 2030), connected/automated cars, and global positioning via new platforms (e.g. hydrogen fuel cells), supporting India's goal of becoming a top-3 auto manufacturer. The sector also supports ~37 million jobs." },
+            { id: 5, name: "Auto Components", sector: "Industry", contribution: "Intertwined with auto manufacturing; components make up ~49% of auto sector output", contributionValue: null, growthDrivers: "Growing vehicle production, export of components to global automakers, and PLI schemes for auto components.", keyHubs: "Pune, Manesar (Haryana), Chennai, Hosur (TN), Mumbai.", futureOutlook: "Domestic auto component exports are poised to rise with global supply chain shifts; strong demand expected for electric vehicle components (batteries, motors)." },
+            { id: 6, name: "Pharmaceuticals & Biotechnology", sector: "Industry/Services", contribution: "~1.7% of GDP", contributionValue: 1.7, growthDrivers: "A vast generics base, vaccine production (India makes 60% of global vaccine supply), strong R&D (14 NIPER institutes), and government schemes (PLI for drugs, PMBJP).", keyHubs: "Hyderabad (Dr. Reddy's, Bharat Biotech), Ahmedabad (Zydus Cadila), Mumbai (Sun Pharma), Vadodara, and Baddi (HP).", futureOutlook: "Innovation focus (National Pharma MedTech policy), biosimilars/biologics growth, and expanding exports. The government is investing in R&D (e.g. ₹5,000 Cr PRIP scheme) and creating National Biopharma Mission campuses to move up the value chain." },
+            { id: 7, name: "Textiles & Apparel", sector: "Industry", contribution: "~2% of GDP", contributionValue: 2, growthDrivers: "\"Make in India\" initiatives (e.g. PM-MITRA Parks), 100% FDI allowed, and labor resources.", keyHubs: "Tamil Nadu (Coimbatore, Tirupur for garments), Gujarat (Ahmedabad, Surat textile mills), Punjab/Haryana (handloom, home textiles), Maharashtra (Bhiwandi), Bengaluru (tech textiles R&D).", futureOutlook: "Doubling output by 2030 (Industry Vision report) with technical textiles, expanding exports, and aligning with sustainability (e.g. organic cotton, recycling). The sector employs ~45 million people, especially women and rural workforce." },
+            { id: 8, name: "Food Processing & Agribusiness", sector: "Industry/Services", contribution: "GVA grew from 1.30 lakh crore (2013) to 2.08 lakh crore (2022)", contributionValue: null, growthDrivers: "Rising incomes, WTO/SDM cultivation, and export demand for processed foods. India has launched several PLI schemes (e.g. for ready-to-eat foods, staples) and schemes (PMKSY, PMFME) to modernize cold chains and processing units.", keyHubs: "Dairy (Amul in Gujarat), Pulses/Cereals mills (Punjab, MP), Fruits/Vegetables (Maharashtra), Fish processing (TN/Kerala).", futureOutlook: "Higher value addition, reducing post-harvest waste, and creating global food brands. (India's food processing sector grew~7.3% annualized to 2022)." },
+            { id: 9, name: "Agriculture & Crops", sector: "Primary", contribution: "~17.7% of GDP", contributionValue: 17.7, growthDrivers: "Subsidies (MSP), Rabi/Kharif rotations, and agri tech (HYV seeds, drip irrigation).", keyHubs: "Punjab/Haryana (rice, wheat), Uttar Pradesh/Madhya Pradesh (sugarcane, pulses), Maharashtra (cotton, soy), Andhra/West Bengal (paddy).", futureOutlook: "Diversification (horticulture up from 35% of exports), climate-resilient crops, organic farming growth, and linking farmers to markets via eNAM. While its GDP share is declining in favor of services, agriculture still employs ~45% of workforce and drives rural consumption." },
+            { id: 10, name: "Horticulture & Plantation Crops", sector: "Primary", contribution: "Significant share of agricultural GDP.", contributionValue: null, growthDrivers: "Export markets (e.g. spices to Gulf/Europe), diversified diet at home, and agro-processing.", keyHubs: "Assam/WB (tea, jute), Kerala/Karnataka (coffees, spices, rubber), Punjab/ Maharashtra (citrus, grapes), Himachal/TN (apples, chilies).", futureOutlook: "Value-addition (juices, canned fruits), GI branding (Darjeeling tea, Himalayan garlic), and horticulture mission boosting cold storage." },
+            { id: 11, name: "Livestock & Dairy", sector: "Primary", contribution: "~5-6% of GDP (dairy alone)", contributionValue: 5.5, growthDrivers: "Cooperatives (Amul), Operation Flood legacy, nutrition programs (milk for school kids), and rising demand for protein.", keyHubs: "Anand (Amul HQ, Gujarat), Haryana, UP, Punjab, Rajasthan.", futureOutlook: "Higher quality dairy export (cheese/infant formula), vaccine production using bovine cultures, and strengthening the cattle feed industry." },
+            { id: 12, name: "Fisheries & Aquaculture", sector: "Primary", contribution: "~1.24% of GDP", contributionValue: 1.24, growthDrivers: "Shrimp and finfish exports (\$6.7B in 2019), coastal aquaculture, and fish food products.", keyHubs: "Andhra Pradesh/Gujarat (shrimp farming), Kerala (marine catch), Maharashtra (tuna, pomfret).", futureOutlook: "Blue revolution emphasis (deeper sea fishing), value-added products (ready-to-cook seafood), and expansion of inland aquaculture (prawns, carp)." },
+            { id: 13, name: "Forestry & Timber Products", sector: "Primary", contribution: "~0.9% of GDP (forest products) (est.)", contributionValue: 0.9, growthDrivers: "Construction and furniture demand, paper/plywood industries.", keyHubs: "Northeast (bamboo, cane), Central India (mango wood), Karnataka/Madhya Pradesh (teak, sandalwood).", futureOutlook: "Sustainable forestry (joint forest management), forest-based industries (resins, essential oils), and carbon trading potential." },
+            { id: 14, name: "Oil & Gas", sector: "Industry/Energy", contribution: "\"Coke & Refined Petroleum\" GVA -2.12 lakh crore (2022)", contributionValue: null, growthDrivers: "Domestic demand for fuel, expanding refinery capacity, government PLI for gas processing.", keyHubs: "Jamnagar (Gujarat, world's largest refinery), Mumbai High/KGD6 (offshore oil & gas fields), Assam/ Nagaland (ONGC gas fields).", futureOutlook: "Increased exploration (16% acreage hike planned), simplified licensing (single license for hydrocarbons), and greater ethanol blending (India is 2nd highest globally, targeting 20% by 2025). India is also a top-5 exporter of refined products." },
+            { id: 15, name: "Coal & Minerals", sector: "Industry", contribution: "Coal accounts for ~55% of power generation; minerals underpin steel/energy.", contributionValue: null, growthDrivers: "Power demand, steel output, and recently commercial coal mining auctions.", keyHubs: "Jharkhand/Chhattisgarh (coal), Odisha/Chhattisgarh (iron ore), Rajasthan/TN (limestone, bauxite).", futureOutlook: "Opening mining to private/foreign firms, raising mining output, and moving upvalue chains (aluminum, steel)." },
+            { id: 16, name: "Iron & Steel Manufacturing", sector: "Industry", contribution: "3rd largest global producer (~125 Mt steel/year)", contributionValue: null, growthDrivers: "Infrastructure and auto demand, and raw material availability.", keyHubs: "Odisha (JSW Steel), Chhattisgarh (Bhilai), Jharkhand (Jamshedpur).", futureOutlook: "Green steel (coal to hydrogen), doubling capacities, and Make in India focus on heavy industries." },
+            { id: 17, name: "Cement & Building Materials", sector: "Industry", contribution: "India is 2nd largest cement producer.", contributionValue: null, growthDrivers: "Urban housing (PMAY), rural roads, and factories.", keyHubs: "Gujarat, Telangana, Madhya Pradesh.", futureOutlook: "Technology (dry kilns), PLI incentives, and expansion with construction boom." },
+            { id: 18, name: "Construction & Infrastructure Development", sector: "Industry", contribution: "~8-9% of GDP", contributionValue: 8.5, growthDrivers: "Government capex (roads, railways, ports), urban housing, and industrial corridors (DMIC). Programs like Bharatmala (highways) and Sagarmala (ports) accelerate growth.", keyHubs: "", futureOutlook: "Faster connectivity (BharatNet fiber), housing for all, and smart city projects." },
+            { id: 19, name: "Real Estate & Housing", sector: "Services/Industry", contribution: "~7% of GDP", contributionValue: 7, growthDrivers: "Urbanization (housing demand up -17% in FY24), low interest rates, and increased investments (REIT issuance).", keyHubs: "", futureOutlook: "Moderation via regulation (RERA) balanced by continued demand for affordable and green housing." },
+            { id: 20, name: "Renewable Energy (Solar, Wind, Biomass)", sector: "Energy", contribution: "220 GW installed (FY25), part of India's push to 500 GW by 2030", contributionValue: null, growthDrivers: "Falling PV costs, favorable policies (reverse auctions, green bonds), and corporate PPAs.", keyHubs: "Gujarat/Rajasthan solar parks (105 GW total solar), Tamil Nadu/Maharashtra wind farms (50 GW wind).", futureOutlook: "Green hydrogen via renewables, distributed rooftop solar (17 GW installed), and scaling up storage batteries." },
+            { id: 21, name: "Power Generation & Distribution (Thermal, Hydro, Nuclear)", sector: "Energy", contribution: "~74% of power still coal-based.", contributionValue: null, growthDrivers: "Demand from industry and rural electrification.", keyHubs: "NTPC/Jindal coal plants, Kudankulam Nuclear, Tehri/Gandak hydro.", futureOutlook: "Grid reforms (smart grids), rural solar grids, and 10% nuclear expansion plan." },
+            { id: 22, name: "Telecommunications Infrastructure", sector: "Services", contribution: "85.7% tele-density; ~38% annual growth in revenue (to 3.36T in FY24)", contributionValue: null, growthDrivers: "5G rollout (2022 spectrum), BharatNet rural fiber, and cheap data (Jio revolution).", keyHubs: "", futureOutlook: "5G-enabled services (IoT, telemedicine), satellite broadband (GSAT, LEO partnerships), and bridging the digital divide. Major operators: Jio, Airtel, Vodafone-Idea." },
+            { id: 23, name: "Information Technology Hardware (Electronics Manufacturing)", sector: "Industry", contribution: "Projected $300B by 2026 (from $40B in FY23)", contributionValue: null, growthDrivers: "Make in India and PLI schemes.", keyHubs: "Noida (HP, Samsung), Chennai (Foxconn), Jaipur (electronic hubs), Haryana (Panasonic).", futureOutlook: "Domestic manufacture of PC/server equipment, laptops (Acer, Lenovo plants) and scaling to semiconductors (new fabs announced)." },
+            { id: 24, name: "Semiconductor & Electronics Components", sector: "Industry", contribution: "Emerging (IMF: manufacturing 13% GDP in 2022)", contributionValue: 13, growthDrivers: "76K Cr Semicon India scheme (5 fab projects approved for ~1.52 Lakh Cr), and PLI for electronics.", keyHubs: "proposed fabs in Tamil Nadu, Karnataka, Gujarat.", futureOutlook: "Bootstrapping a chip design and fabrication ecosystem (Intel, Micron, Tower Semiconductor investments)." },
+            { id: 25, name: "Civil Aviation (Airlines & Airports)", sector: "Services", contribution: "Contributed ~1.2% of GDP (pre-COVID)", contributionValue: 1.2, growthDrivers: "Fastest domestic passenger market (10% CAGR pre-2020), open skies policies, low-cost carriers.", keyHubs: "Delhi, Mumbai, Bangalore (airports); airlines IndiGo, Air India.", futureOutlook: "Record passenger traffic (2019-131M domestic flyers); more private airports (Noida, Goa), aircraft MRO growth, and sustainable aviation fuels." },
+            { id: 26, name: "Ports & Maritime Shipping", sector: "Services", contribution: "Vital for trade; India has 7513 km coastline and 12 major + 200+ minor ports.", contributionValue: null, growthDrivers: "Import-export trade (valued \$824B exports FY24), government focus on coastal shipping (Sagarmala).", keyHubs: "Mundra, Kandla, Nhava Sheva, Kolkata. FY24 cargo 819 MTPA.", futureOutlook: "Inland waterways (26 national rivers), cruise tourism, and plan to become regional trans-shipment hub." },
+            { id: 27, name: "Road Transport & Logistics", sector: "Services", contribution: "Roads carry ~78% of transport GVA", contributionValue: null, growthDrivers: "Massive highway building (NHAI's 20,000 km) and express logistics (FASTag, e-way bills).", keyHubs: "", futureOutlook: "Integrated logistics parks, EV trucking, drone delivery, and connectivity (India's road network is 6th largest)." },
+            { id: 28, name: "Railways & Metro Transit", sector: "Services", contribution: "Indian Railways is a Rs 2.8 lakh Cr enterprise (2023), employing 1.4M.", contributionValue: null, growthDrivers: "freight volume up 5.2% in FY23, metro networks expanding (Delhi, Bengaluru, Kolkata etc.).", keyHubs: "Delhi, Mumbai, Chennai (major stations/corridors).", futureOutlook: "Dedicated Freight Corridors (Western/Eastern) boosting capacity, $150+km/h$ Vande Bharat trains, and public- private stations." },
+            { id: 29, name: "Tourism & Hospitality", sector: "Services", contribution: "~5% of GDP", contributionValue: 5, growthDrivers: "tourism campaigns (Incredible India), business travel, and rebound after COVID.", keyHubs: "Goa, Kerala, Rajasthan, Tamil Nadu (pilgrimage). FY23 domestic tourists ~1.85B (pre- pandemic levels).", futureOutlook: "expected double-digit growth, medical/wellness tourism, and circuit development (Buddhist, heritage circuits)." },
+            { id: 30, name: "Medical Tourism", sector: "Services", contribution: "A subset of tourism; ~0.8M foreign patients pre-COVID, revenue ~ 9,000 Cr.", contributionValue: null, growthDrivers: "high-quality care at low cost (e.g., cardiac surgery, orthopedics), Ayurveda and yoga retreats.", keyHubs: "Chennai, Delhi, Mumbai, Kerala (Ayurveda).", futureOutlook: "growth in niche areas (organ transplants, stem cell), and focus on regulatory accreditation (NABH)." },
+            { id: 31, name: "Education & Skill Development", sector: "Services", contribution: "~2.9% of GDP", contributionValue: 2.9, growthDrivers: "demographics (young population), foreign branch campuses (e.g. Manipal-NY), and EdTech (BYJU'S & co.).", keyHubs: "", futureOutlook: "international student inflow, vocational training (PMKVY), and bridging skill gaps for Make in India." },
+            { id: 32, name: "EdTech & Online Education", sector: "Services", contribution: "Fast-growing segment; EdTech funding >\$5B since 2010.", contributionValue: null, growthDrivers: "COVID adoption, large K-12/competitive exam market.", keyHubs: "Bengaluru, Delhi.", futureOutlook: "integration of VR/AI, skill courses, and scaling to small towns via mobile." },
+            { id: 33, name: "Healthcare Services (Hospitals, Clinics)", sector: "Services", contribution: "-3-4% of GDP", contributionValue: 3.5, growthDrivers: "rising income, insurance coverage, aging population.", keyHubs: "Delhi NCR, Mumbai, Chennai (medical centers), Pune, Ahmedabad.", futureOutlook: "telemedicine, home care, and public health (Ayushman Bharat's push for universal care)." },
+            { id: 34, name: "Medical Devices & Diagnostics", sector: "Manufacturing", contribution: "\$12B market FY2024 (growing 15% p.a.), projected \$50B by 2025.", contributionValue: null, growthDrivers: "PLI incentives, domestic replacement (90% imported historically).", keyHubs: "Haryana/Chennai (disposables) and Bengaluru/Pune (imaging).", futureOutlook: "Government aims to boost local production (see PLI for devices) and large conglomerates entering sector." },
+            { id: 35, name: "Media & Entertainment (Film, Television, Digital)", sector: "Services", contribution: "~1.6% of GDP", contributionValue: 1.6, growthDrivers: "TV serials, over-the-top (OTT) video, music, and digital advertising.", keyHubs: "Mumbai (Bollywood, studios), Hyderabad (Telugu cinema, Ramoji Film City), Bengaluru (animation).", futureOutlook: "Streaming content boom (Netflix, Amazon investing), regional cinema, gaming content, and Bollywood sequels/merchandise." },
+            { id: 36, name: "Publishing & Printing", sector: "Services", contribution: "India is the world's largest book market (in volume).", contributionValue: null, growthDrivers: "high literacy, exam prep industry, and rising e-books.", keyHubs: "Delhi-NCR (education publishing), Gurgaon, Chennai (English dailies).", futureOutlook: "Digital publishing, vernacular content, and export of educational materials." },
+            { id: 37, name: "Animation, Gaming & E-Sports", sector: "Services", contribution: "~$3.5B gaming market (2023)", contributionValue: null, growthDrivers: "young demographics, smartphone gaming, and credible internet speeds.", keyHubs: "Hyderabad (Prime Focus, Ubisoft), Pune, Bangalore.", futureOutlook: "online gaming tournaments, job growth, and possibly \$10B segment by 2030." },
+            { id: 38, name: "Sports Goods & Athletic Equipment", sector: "Manufacturing", contribution: "India exports ~60% of world's cricket bats and 25% of hockey equipment.", contributionValue: null, growthDrivers: "global sports tourism, domestic fitness trend.", keyHubs: "Meerut (cricket bats), Jalandhar (sportswear).", futureOutlook: "national sports policy (Khelo India), brand building, and medical sports gear." },
+            { id: 39, name: "Sports Infrastructure & Leagues", sector: "Services", contribution: "IPL's valuation \$8B; hosting global events (Cricket World Cup 2023, Olympics 2036 in bidding).", contributionValue: null, growthDrivers: "private investment in sports leagues (IPL, ISL for football), stadium development, and rural sports programs.", keyHubs: "", futureOutlook: "sports tourism, commercialization of traditional games, and ancillary industries (merchandising, sports tech)." },
+            { id: 40, name: "Gems & Jewellery", sector: "Manufacturing", contribution: "~3% of GDP", contributionValue: 3, growthDrivers: "bridal demand, global circuits (Dubai/Singapore exports).", keyHubs: "Surat (diamonds), Jaipur (stones, jewelry), Mumbai.", futureOutlook: "Hallmarking/branding (Ministry's hallmark campaign), lab-grown diamond production, and expanding e-commerce jewellery retail." },
+            { id: 41, name: "Leather & Footwear", sector: "Manufacturing", contribution: "3rd largest producer of leather footwear.", contributionValue: null, growthDrivers: "abundant cattle skin supply, export networks.", keyHubs: "Kanpur, Kolkata, Chennai, Agra.", futureOutlook: "FDI up to 100%, and push into high-end leather goods (automotive leather, fashion products)." },
+            { id: 42, name: "Handicrafts & Carpets", sector: "Manufacturing", contribution: "~2.5% of GDP", contributionValue: 2.5, growthDrivers: "GI products (e.g. Bhagalpuri silk, Chanderi cotton), rural artisans programs (Pura, Sanskrutika Deshprem).", keyHubs: "Varanasi (silk), Saharanpur (woodcraft), Kashmir (carpets).", futureOutlook: "E-commerce (IndiaCrafts, Amazon Karigari) to global markets, and cultural preservation financing." },
+            { id: 43, name: "Chemicals (Basic & Specialty)", sector: "Manufacturing", contribution: "~1.4% of GDP", contributionValue: 1.4, growthDrivers: "agrochemicals (farm inputs), petrochemical plants.", keyHubs: "Gujarat (Vadodara), Maharashtra (Navi Mumbai), Tamil Nadu (Chennai-Pallavaram industrial area).", futureOutlook: "PLI schemes for chemicals, focus on high-value specialty chemicals (dyes, agro-chemicals)." },
+            { id: 44, name: "Industrial Machinery & Capital Goods", sector: "Manufacturing", contribution: "~6-7% of manufacturing.", contributionValue: null, growthDrivers: "demand from auto, steel, energy sectors.", keyHubs: "Ahmedabad, Coimbatore, Bengaluru.", futureOutlook: "Upgrading local production (PLI), meeting Make in India goals for machinery self-sufficiency." },
+            { id: 45, name: "Automation & Robotics", sector: "Manufacturing/Services", contribution: "Emerging sector (<1% GDP).", contributionValue: null, growthDrivers: "Industry 4.0 adoption in factories, reducing labor costs.", keyHubs: "Fanuc India (Pune), ABB (Hyderabad).", futureOutlook: "Wider industrial automation (textiles, pharma), drone/robot startups (Emotix, TATA Elxsi investment)." },
+            { id: 46, name: "Artificial Intelligence & Big Data", sector: "Services", contribution: "Diffuse impact.", contributionValue: null, growthDrivers: "startups (NLP, vision), R&D institutes (NASSCOM, IIT hubs).", keyHubs: "Bengaluru (AI labs), Delhi/NCR (AI startups).", futureOutlook: "Government AI push (NITI's IndiaAI), integrating AI in agriculture, health, governance." },
+            { id: 47, name: "Cloud Computing & Data Centers", sector: "Services", contribution: "Infrastructure enabler.", contributionValue: null, growthDrivers: "Digital India, enterprise migration to cloud.", keyHubs: "Mumbai, Chennai, Delhi data center hubs.", futureOutlook: "Local cloud platforms (NCR datacenters) for data sovereignty, rise of edge computing." },
+            { id: 48, name: "Software & Product Development", sector: "Services", contribution: "Overlaps IT, but includes SaaS product companies (Freshworks, Zoho).", contributionValue: null, growthDrivers: "global market access, startup ecosystem.", keyHubs: "Chennai (Zoho HQ), Gurgaon (Freshworks), Hyderabad.", futureOutlook: "More unicorns in SaaS, software exports rise." },
+            { id: 49, name: "Internet & Digital Services", sector: "Services", contribution: "E.g., online classifieds, content platforms.", contributionValue: null, growthDrivers: "mobile internet (~1B users), digital ad spending.", keyHubs: "Flipkart, Byju's, Swiggy, Zomato (e-commerce, edtech, food delivery).", futureOutlook: "5G/6G enabling AR/VR, smart cities apps, and digital financial inclusion." },
+            { id: 50, name: "FinTech & Digital Payments", sector: "Services", contribution: "See also #2 BFSI.", contributionValue: null, growthDrivers: "UPI (regulated by NPCI), mobile wallets (Paytm), digital lending.", keyHubs: "", futureOutlook: "cross-border payments, open banking (IndiaStack), crypto regulation." },
+            { id: 51, name: "Insurance & Financial Technology (InsurTech)", sector: "Services", contribution: "Low insurance density (~4.2% GDP premium).", contributionValue: 4.2, growthDrivers: "new IRDA regulations, startup insurers (Digital insurance).", keyHubs: "", futureOutlook: "higher penetration via tech (digital apps for life/health insurance)." },
+            { id: 52, name: "Banking Technology (Core Banking, NBFCs)", sector: "Services", contribution: "Fundamental enabler of BFSI.", contributionValue: null, growthDrivers: "digital banking platforms (CoreStack, Mool Finance). NBFCs (Cholamandalam, Mahindra Finance) grew by 15% (FY24) and control >20% of credit, aiding SME lending.", keyHubs: "", futureOutlook: "" },
+            { id: 53, name: "Mutual Funds & Capital Markets", sector: "Services", contribution: "AUM \$600B.", contributionValue: null, growthDrivers: "retail participation (SIP inflows ~1 lakh Cr/month), IPO boom (LIC IPO 65k Cr), and foreign portfolio inflow.", keyHubs: "BSE, NSE in Mumbai.", futureOutlook: "Fintech on trading, privatizations, and alternative investments (REITs, InvITs)." },
+            { id: 54, name: "Commodity & Futures Exchanges", sector: "Finance", contribution: "Smaller segment.", contributionValue: null, growthDrivers: "farmers hedging (eNAM), speculator interest.", keyHubs: "", futureOutlook: "integration with global markets, stablecoins." },
+            { id: 55, name: "Green Chemicals & Biofuels", sector: "Industry", contribution: "Emerging (0.5% GDP).", contributionValue: 0.5, growthDrivers: "Ethanol blending (2nd globally, 10% blend currently), 20% target by 2025; bio-CNG (PM JI-VAN Yojana) for fuels.", keyHubs: "", futureOutlook: "Expanding 2G biofuels (from agricultural waste), waste-to-energy plants, and bio-based plastics." },
+            { id: 56, name: "Battery Manufacturing & EV Components", sector: "Industry", contribution: "Nascent, part of automotive/ manufacturing share..", contributionValue: null, growthDrivers: "PLI for battery cell (\$3.4B approved), government incentive for Gigafactories.", keyHubs: "Major consortia in Tamil Nadu and Gujarat.", futureOutlook: "Reduction in EV prices, and export of battery packs." },
+            { id: 57, name: "Electric Vehicles - Two & Three Wheelers", sector: "Industry", contribution: "~700k 2W EVs sold FY24, about 35% annual growth. Market share ~8% of 2W.", contributionValue: null, growthDrivers: "subsidies (FAME-II), ride-sharing adoption (e-autos).", keyHubs: "Bangalore (Ola S1 scooter), Mumbai (Hero Electric), Lucknow (e- rickshaws).", futureOutlook: "Dominance in urban last-mile transport, electrification of scooters/auto-rickshaws." },
+            { id: 58, name: "Electric Vehicles - Four Wheelers", sector: "Industry", contribution: "Smaller base ( 42k EV cars FY24) but fastest growing segment.", contributionValue: null, growthDrivers: "new launches (Tata Nexon EV, MG ZS EV), emission norms.", keyHubs: "Gurgaon (MG), Pune/Chennai (Tata).", futureOutlook: "Govt targets 30% EVs by 2030, with charging infrastructure expansion." },
+            { id: 59, name: "Plastics & Polymers", sector: "Manufacturing", contribution: "~1% GDP.", contributionValue: 1, growthDrivers: "FMCG packaging, autos.", keyHubs: "Gujarat, Maharashtra (chemicals belts).", futureOutlook: "Biodegradable plastics, recycling partnerships." },
+            { id: 60, name: "Packaging Industry", sector: "Manufacturing", contribution: "Enables e-commerce and FMCG.", contributionValue: null, growthDrivers: "retail growth, food grade packaging.", keyHubs: "corrugated boxes (Ballarpur, Jabalpur), flexi-pack (Ahmedabad).", futureOutlook: "Smart packaging (QR-enabled), and growth of palletized logistics." },
+            { id: 61, name: "Green Building Materials", sector: "Manufacturing", contribution: "Emerging.", contributionValue: null, growthDrivers: "LEED standards, urban housing.", keyHubs: "ACC, L&T (RMC).", futureOutlook: "Government push for sustainable construction (PlusHomes)." },
+            { id: 62, name: "Construction Equipment", sector: "Manufacturing", contribution: "-1% GDP.", contributionValue: 1, growthDrivers: "Infrastructure demand.", keyHubs: "L&T Heavy Engg, JCB (Vadodara/Pune).", futureOutlook: "EV- driven machinery, telematics." },
+            { id: 63, name: "FMCG (Fast-Moving Consumer Goods)", sector: "Manufacturing/Services", contribution: "-10% of GDP.", contributionValue: 10, growthDrivers: "expanding rural middle class, e-grocery.", keyHubs: "ITC, HUL", futureOutlook: "premiumization of products, and thrust on local brands (HungryMan)." },
+            { id: 64, name: "Consumer Durables", sector: "Manufacturing", contribution: "~1.5% GDP.", contributionValue: 1.5, growthDrivers: "Rising incomes and electricity access.", keyHubs: "Voltas, Whirlpool, LG plants in Noida/ Gurgaon.", futureOutlook: "Smart appliances, Make in India TV/manufacturing (Samsung-TCL JV)." },
+            { id: 65, name: "Textile & Garment Machinery", sector: "Manufacturing", contribution: "Small but critical.", contributionValue: null, growthDrivers: "spurred by domestic textile equipment needs.", keyHubs: "Coimbatore (looms), Ahmedabad (spinning).", futureOutlook: "Govt push for technical textile machines." },
+            { id: 66, name: "Non-Ferrous Metals", sector: "Manufacturing", contribution: "Aluminium, copper, nickel smelting. India is 2nd largest aluminium producer.", contributionValue: null, growthDrivers: "construction demand, EV usage.", keyHubs: "Odisha (NALCO), Jharkhand.", futureOutlook: "green aluminum (hydro power smelters), downstream alloys." },
+            { id: 67, name: "Mining Equipment & Engineering", sector: "Manufacturing", contribution: "Supports mining sector.", contributionValue: null, growthDrivers: "", keyHubs: "TIL (Nagpur) for mining machines, BEML (Bangalore) for tippers.", futureOutlook: "indigenous Tech for open-cast mines." },
+            { id: 68, name: "Petroleum Products & Petrochemicals", sector: "Industry", contribution: "Already covered under Oil & Gas (#14) and Chemicals (#43).", contributionValue: null, growthDrivers: "", keyHubs: "", futureOutlook: "" },
+            { id: 69, name: "Defense Manufacturing", sector: "Industry", contribution: "-1.7% of GDP", contributionValue: 1.7, growthDrivers: "Make in India for Defence (25% minimum Indigenous Value), OROP spending, PLI for defense.", keyHubs: "Hyderabad (Hindustan Aeronautics Ltd, DRDO labs), Pune, Chennai.", futureOutlook: "Target 50k Cr exports by 2029, expanding private sector (TATA, L&T partnerships), and import substitution of military hardware." },
+            { id: 70, name: "Space Research & Satellite Launches", sector: "Government/Tech", contribution: "-0.19% of GDP (2020)", contributionValue: 0.19, growthDrivers: "ISRO's low-cost missions (PSLV, GSLV successes), NewSpace policies (IN-SPACE, NSIL commercial arm). India launched 229 startups (2014-2024).", keyHubs: "Sriharikota (Satish Dhawan Space Centre), Bengaluru (ISRO HQ, startups).", futureOutlook: "Private launch services (SatSure, Pixxel satellites), space tourism, and leveraging satellite data for agriculture/telecom." },
+            { id: 71, name: "Biotechnology & Bioeconomy", sector: "R&D/Industry", contribution: "~$137.2B Bioeconomy in 2022", contributionValue: null, growthDrivers: "BIRAC's startup network (4,800+ supported), Biotech parks (Genome Valley, Hyderabad), and PLI for bulk drugs.", keyHubs: "", futureOutlook: "Synthetic biology, GM crops (e.g., Bt-cotton is already 95% of crop), and vaccines R&D (Coronavirus tech spillover)." },
+            { id: 72, name: "Agriculture R&D & Biotechnology", sector: "Services", contribution: "Part of education & agri sectors.", contributionValue: null, growthDrivers: "National Education Policy emphasis on research, biotech parks (AstraZeneca-BIRAC partnerships).", keyHubs: "IARI, IIHS", futureOutlook: "Gene editing (seed tech), drone/agri-robotics." },
+            { id: 73, name: "Environmental Services & Waste Management", sector: "Services", contribution: "Fragmented.", contributionValue: null, growthDrivers: "PPP waste-to-energy, Swachh Bharat (urban sanitation growth).", keyHubs: "Ramky Enviro, local vendors.", futureOutlook: "Circular economy (plastics recycling), effluent treatment for industries, and carbon footprint consulting." },
+            { id: 74, name: "Water & Sanitation Infrastructure", sector: "Services", contribution: "Drinking water projects (Jal Jeevan Mission) ~3 lakh Cr commitment.", contributionValue: null, growthDrivers: "100% rural tap water goal by 2024.", keyHubs: "", futureOutlook: "Urban sewage treatment (Namami Gange), smart water networks." },
+            { id: 75, name: "Urban Development & Smart Cities", sector: "Services", contribution: "100 Smart Cities Mission cities have spurred numerous projects.", contributionValue: null, growthDrivers: "tech-enabled governance, municipal bonds (Bengaluru's bond issuance).", keyHubs: "", futureOutlook: "IoT city services, metro extensions, and sustainable urban planning." },
+            { id: 76, name: "Public Transportation (Buses, Metro)", sector: "Services", contribution: "Modern bus (Stagecarriage) networks and metro lines connect metros.", contributionValue: null, growthDrivers: "urban congestion, multimodal transit.", keyHubs: "Delhi/Mumbai Metro expansions, electric buses (3000 e-buses target by 2025).", futureOutlook: "Improved first/last mile, high-speed regional rails." },
+            { id: 77, name: "Housing Finance & Mortgages", sector: "Finance", contribution: "HFCs like HDFC/LICHFL originated ~25% of home loans.", contributionValue: null, growthDrivers: "low interest, rising urban incomes.", keyHubs: "", futureOutlook: "Securitization, fintech home loan approvals, and affordable housing finance." },
+            { id: 78, name: "Microfinance & Rural Credit", sector: "Finance", contribution: "~$150B loan portfolio (FY23).", contributionValue: null, growthDrivers: "NBFC- MFIs (Shriram, Ujjivan) expanding low-income lending.", keyHubs: "", futureOutlook: "Fintech credit scoring, linking loans to real-time agri data." },
+            { id: 79, name: "Cooperative Banks & Rural Co-ops", sector: "Finance", contribution: "1.5 lakh co-op banks/PCS provides credit to farmers/cooperatives.", contributionValue: null, growthDrivers: "Agriculture credit is largely through co-ops.", keyHubs: "", futureOutlook: "Modernization via Core-banking (99% reach Mandate by 2023) and supporting agri MSMEs." },
+            { id: 80, name: "Mutual Funds & Asset Management", sector: "Finance", contribution: "AUM -55 lakh crore (2024).", contributionValue: null, growthDrivers: "SIP culture (1 lakh Cr+ per month), fintech trading apps (Groww, Zerodha).", keyHubs: "", futureOutlook: "Regulatory push for retirement funds, fractional investing, and capturing inflows via Tier -2/3 cities." },
+            { id: 81, name: "Commodities & Futures Exchanges", sector: "Finance", contribution: "NCDEX/MCX volumes -15 lakh Cr/ day.", contributionValue: null, growthDrivers: "rising agri commodity trading (cotton, wheat), banaspati futures.", keyHubs: "", futureOutlook: "dematerialized commodities, weather-derivatives for farmers." },
+            { id: 82, name: "Renewable Energy Storage", sector: "Industry/Services", contribution: "Emerging.", contributionValue: null, growthDrivers: "grid battery storage projects (NVVN's 1.2 GW), rooftop ESS.", keyHubs: "", futureOutlook: "Utility-scale battery parks, pumped hydro." },
+            { id: 83, name: "Transmission & Grid Infrastructure", sector: "Industry", contribution: "1.8 lakh circuit km of transmission lines.", contributionValue: null, growthDrivers: "UHV projects for renewable power, cross-border grids (Bangladesh, Nepal).", keyHubs: "", futureOutlook: "Smart grids (SAMAST scheme), 1 GW grid storage." },
+            { id: 84, name: "Shared Mobility & Ride-Sharing", sector: "Services", contribution: "~ 50,000 Cr (2024) industry.", contributionValue: null, growthDrivers: "Ola, Uber, Rapido. Drivers: urbanization, smartphone apps.", keyHubs: "", futureOutlook: "EV cabs, integrated mobility-as-a-service." },
+            { id: 85, name: "Cultural Tourism & Wellness", sector: "Services", contribution: "Spiritual tourism (Char Dham, Kumbh) ~20,000 Cr.", contributionValue: null, growthDrivers: "Yoga certification centers (800k certified in 2023), Ayurvedic resorts.", keyHubs: "", futureOutlook: "Branding India as wellness hub, and folk-cultural tourism (Odisha/Dance)." },
+            { id: 86, name: "Ayurveda & Herbal Products", sector: "Services/Manufacturing", contribution: "\$10B market (globally); India's exports growing.", contributionValue: null, growthDrivers: "global interest in natural products.", keyHubs: "Kerala (Ayurvedic medicine makers), Pune (Phytopharma).", futureOutlook: "Swadeshi ethos fueling supplements, and GI of herbs (Tulsi, Neem)." },
+            { id: 87, name: "Yoga & Holistic Wellness", sector: "Services", contribution: "Large intangible soft-power export; millions travel for retreats.", contributionValue: null, growthDrivers: "UN Decade of Yoga (2014-2024), wellness tourism.", keyHubs: "Rishikesh, Pune (Isha).", futureOutlook: "Yoga teacher training exports, e-wellness apps." },
+            { id: 88, name: "Educational Exports", sector: "Services", contribution: "India sends >700k students abroad; inbound student count -50k.", contributionValue: null, growthDrivers: "demand for global education.", keyHubs: "UPES UK", futureOutlook: "Branch campuses in India (NEP 2020 encourage), and India as a education destination (Sri Lanka/Bhutan)." },
+            { id: 89, name: "Diamond Cutting & Polishing", sector: "Manufacturing", contribution: "Surat alone processes ~90% of world's rough diamonds. Exports: \$27B (2018).", contributionValue: null, growthDrivers: "polki jewelry demand globally.", keyHubs: "", futureOutlook: "automation in cutting, lab-grown diamonds." },
+            { id: 90, name: "Precision Engineering & Machine Tools", sector: "Manufacturing", contribution: "~0.6% GDP.", contributionValue: 0.6, growthDrivers: "Indigenous engine makers (Telco, Kirloskar), machine tool PLI.", keyHubs: "", futureOutlook: "Robots, CNC tools for next-gen manufacturing." },
+            { id: 91, name: "Technology Hubs & Innovation Clusters", sector: "Services", contribution: "Not direct GDP, but Catalysts.", contributionValue: null, growthDrivers: "special zones for fintech, biotech.", keyHubs: "Bengaluru, Pune-Satara, GIFT City (Gujarat).", futureOutlook: "New Hubs in Tier-II cities, smart incubation." },
+            { id: 92, name: "Public Sector Investments", sector: "Industry/Services", contribution: "PSU spending forms ~8-9% of GDP (oil, coal, power PUs).", contributionValue: 8.5, growthDrivers: "Recent telecom disinvestment (BSNL).", keyHubs: "", futureOutlook: "Privatization (2G/3G spectrum, PSE sale), unlocking capital." },
+            { id: 93, name: "Government Schemes Impact (Rural/Urban)", sector: "Services", contribution: "Programs like MGNREGA add ~1% GDP (rural employment), Ujjwala (free LPG to 90M poor).", contributionValue: 1, growthDrivers: "they boost rural demand (MGNREGA workers spend on agrarian goods).", keyHubs: "", futureOutlook: "Scaling AGPS (precision farming) to raise agri productivity." },
+            { id: 94, name: "Innovation & R&D", sector: "Services", contribution: "~2.7% of GDP R&D spend (2023).", contributionValue: 2.7, growthDrivers: "National Science & Tech budgets (INR 30k Cr), space/defense R&D.", keyHubs: "", futureOutlook: "Academia-industry linkages (TEQIP), startup incubators (t-Hub)." },
+            { id: 95, name: "E-governance & Digital India", sector: "Services", contribution: "Improved efficiency; Aadhaar/UPI are public platforms.", contributionValue: null, growthDrivers: "Fintech (UPI now 60% of all real-time global payments volume ).", keyHubs: "", futureOutlook: "unified logistics (E-way bills), digital land records, and Blockchain piloting in governance." },
+            { id: 96, name: "Circular Economy & Environmental Tech", sector: "Services", contribution: "Recycling industry (~₹50,000 Cr waste collection).", contributionValue: null, growthDrivers: "extended producer responsibility (EPR) for plastics/e-waste.", keyHubs: "", futureOutlook: "waste-to energy projects (solar garbage hoppers), carbon credit market (ISEDA/PgIM)." },
+            { id: 97, name: "Climate Change Mitigation Projects", sector: "Services", contribution: "Emerging (Green bonds issuance ~₹25K Cr).", contributionValue: null, growthDrivers: "solar parks, reforestation.", keyHubs: "", futureOutlook: "Aligning with Paris (India generates 7% of world solar energy)." },
+            { id: 98, name: "Urban Water Supply & Sanitation", sector: "Services", contribution: "Clean water for 85% urban (2024).", contributionValue: null, growthDrivers: "Atal Mission for Jal Jeevan (water pipelines in villages).", keyHubs: "", futureOutlook: "Industrial effluent reuse (Zero Liquid Discharge), smart metering." },
+            { id: 99, name: "Renewable Fuels & Hydrogen", sector: "Energy", contribution: "Early stage (0.01% GDP).", contributionValue: 0.01, growthDrivers: "$1.5B pilot green hydrogen plants (NTPC, GAIL).", keyHubs: "", futureOutlook: "Green hydrogen for steel/petrochem, city gas distribution (PNG)." },
+            { id: 100, name: "Education & Vocational Exports", sector: "Services", contribution: "India’s pedagogic content (NCERT textbooks) exported to countries with Indian diaspora; skill training (tech courses) for foreign nationals.", contributionValue: null, growthDrivers: "", keyHubs: "", futureOutlook: "Project Skills India internationally, and e-learning platforms with regional language reach." }
+        ];
+
+        const activitiesGrid = document.getElementById('activitiesGrid');
+        const searchInput = document.getElementById('searchInput');
+        const sectorFilter = document.getElementById('sectorFilter');
+        const gdpChart = document.getElementById('gdpChart');
+        const messageBox = document.getElementById('messageBox');
+        const messageContent = document.getElementById('messageContent');
+        const messageCloseBtn = document.getElementById('messageCloseBtn');
+
+        // Function to show custom message box
+        function showMessageBox(message) {
+            messageContent.textContent = message;
+            messageBox.classList.remove('hidden');
+        }
+
+        // Event listener for message box close button
+        messageCloseBtn.addEventListener('click', () => {
+            messageBox.classList.add('hidden');
+        });
+
+        // Populate sector filter options
+        function populateSectorFilter() {
+            const sectors = [...new Set(activitiesData.map(activity => activity.sector))].sort();
+            sectors.forEach(sector => {
+                if (sector) { // Avoid adding empty string as an option if it exists
+                    const option = document.createElement('option');
+                    option.value = sector;
+                    option.textContent = sector;
+                    sectorFilter.appendChild(option);
+                }
+            });
+        }
+
+        // Function to render activity cards
+        function renderActivities(activities) {
+            activitiesGrid.innerHTML = ''; // Clear existing cards
+            if (activities.length === 0) {
+                activitiesGrid.innerHTML = '<p class="text-center text-gray-500 col-span-full">No activities found matching your criteria.</p>';
+                return;
+            }
+
+            activities.forEach(activity => {
+                const card = document.createElement('div');
+                card.className = 'card bg-white p-6 rounded-lg shadow-md border-t-4 border-indigo-500';
+                card.innerHTML = `
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">${activity.id}. ${activity.name}</h3>
+                    <p class="text-indigo-600 font-medium mb-2">Sector: ${activity.sector}</p>
+                    <p class="text-gray-700 mb-2"><strong>Contribution:</strong> ${activity.contribution}</p>
+                    <p class="text-gray-700 mb-2"><strong>Growth Drivers:</strong> ${activity.growthDrivers || 'N/A'}</p>
+                    <p class="text-gray-700 mb-2"><strong>Key Hubs:</strong> ${activity.keyHubs || 'N/A'}</p>
+                    <p class="text-gray-700"><strong>Future Outlook:</strong> ${activity.futureOutlook || 'N/A'}</p>
+                `;
+                activitiesGrid.appendChild(card);
+            });
+        }
+
+        // Function to filter activities
+        function filterActivities() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedSector = sectorFilter.value;
+
+            const filtered = activitiesData.filter(activity => {
+                const matchesSearch = activity.name.toLowerCase().includes(searchTerm) ||
+                                      activity.sector.toLowerCase().includes(searchTerm) ||
+                                      activity.contribution.toLowerCase().includes(searchTerm) ||
+                                      (activity.growthDrivers && activity.growthDrivers.toLowerCase().includes(searchTerm)) ||
+                                      (activity.keyHubs && activity.keyHubs.toLowerCase().includes(searchTerm)) ||
+                                      (activity.futureOutlook && activity.futureOutlook.toLowerCase().includes(searchTerm));
+                const matchesSector = selectedSector === '' || activity.sector === selectedSector;
+                return matchesSearch && matchesSector;
+            });
+            renderActivities(filtered);
+            drawChart(filtered); // Redraw chart with filtered data
+        }
+
+        // Event listeners for search and filter
+        searchInput.addEventListener('input', filterActivities);
+        sectorFilter.addEventListener('change', filterActivities);
+
+        // Function to draw the bar chart
+        function drawChart(data) {
+            gdpChart.innerHTML = ''; // Clear previous chart
+            const chartData = data
+                .filter(d => d.contributionValue !== null && typeof d.contributionValue === 'number')
+                .sort((a, b) => b.contributionValue - a.contributionValue)
+                .slice(0, 10); // Display top 10 contributors
+
+            if (chartData.length === 0) {
+                gdpChart.innerHTML = '<p class="text-center text-gray-500 col-span-full">No data with percentage contribution to display in chart.</p>';
+                return;
+            }
+
+            const svgWidth = gdpChart.clientWidth;
+            const svgHeight = gdpChart.clientHeight;
+            const margin = { top: 20, right: 20, bottom: 100, left: 60 }; // Increased bottom margin for labels
+            const chartWidth = svgWidth - margin.left - margin.right;
+            const chartHeight = svgHeight - margin.top - margin.bottom;
+
+            // Create SVG group for the chart
+            const svg = d3.select("#gdpChart")
+                .attr("viewBox", `0 0 ${svgWidth} ${svgHeight}`)
+                .attr("preserveAspectRatio", "xMidYMid meet");
+
+            const chartGroup = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            // Scales
+            const xScale = d3.scaleBand()
+                .domain(chartData.map(d => d.name))
+                .range([0, chartWidth])
+                .padding(0.2);
+
+            const yScale = d3.scaleLinear()
+                .domain([0, d3.max(chartData, d => d.contributionValue) * 1.1]) // 10% buffer for max value
+                .range([chartHeight, 0]);
+
+            // Bars
+            chartGroup.selectAll(".bar")
+                .data(chartData)
+                .enter().append("rect")
+                .attr("class", "bar-chart-bar fill-indigo-600")
+                .attr("x", d => xScale(d.name))
+                .attr("y", d => yScale(d.contributionValue))
+                .attr("width", xScale.bandwidth())
+                .attr("height", d => chartHeight - yScale(d.contributionValue));
+
+            // X-axis
+            chartGroup.append("g")
+                .attr("class", "axis-x")
+                .attr("transform", `translate(0,${chartHeight})`)
+                .call(d3.axisBottom(xScale))
+                .selectAll("text")
+                .attr("transform", "rotate(-45)")
+                .style("text-anchor", "end")
+                .style("font-size", "12px")
+                .style("fill", "#555");
+
+            // Y-axis
+            chartGroup.append("g")
+                .attr("class", "axis-y")
+                .call(d3.axisLeft(yScale).ticks(5).tickFormat(d => `${d}%`))
+                .style("font-size", "12px")
+                .style("fill", "#555");
+
+            // Y-axis label
+            chartGroup.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 0 - margin.left + 10)
+                .attr("x", 0 - (chartHeight / 2))
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .style("font-weight", "bold")
+                .style("fill", "#555")
+                .text("Contribution to GDP (%)");
+        }
+
+        // Initial rendering
+        document.addEventListener('DOMContentLoaded', () => {
+            populateSectorFilter();
+            renderActivities(activitiesData);
+            // Load D3.js and then draw the chart
+            const script = document.createElement('script');
+            script.src = "https://d3js.org/d3.v7.min.js";
+            script.onload = () => {
+                drawChart(activitiesData);
+                // Redraw chart on window resize
+                window.addEventListener('resize', () => drawChart(activitiesData));
+            };
+            document.head.appendChild(script);
+        });
+    </script>
+</body>
+</html>
